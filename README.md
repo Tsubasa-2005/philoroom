@@ -1,36 +1,80 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# プロダライベート知能議論サービス PhiloRoom - MVP要件定義
 
-## Getting Started
+## 概要
+PhiloRoomは、ユーザーがテーマを投げかけると、そのテーマに適した多様な視点や信念を持つAIたちが自動的に生成され論語を開始。ユーザーが言語を払うことで、再びAIたちの論語が繰り復され、自分の思考を深めることができる「知性のための議論サーロン」である。
 
-First, run the development server:
+---
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## 基本機能
+
+### 1. プロンプト投入
+- ユーザーが自由なテーマや意見を投げる
+- 例: "AIが教育を管理する未来は良いことか悪いことか"
+
+### 2. 視点抽出AI (Meta AI)
+- GPT-4の一段階の解析として、投入されたプロンプトから「論語に有効な視点」を3~5個抽出
+- 返却形式:
+```json
+[
+  {"name": "Techno-Optimist", "stance": "Believes AI can democratize education and make it more efficient."},
+  {"name": "Humanist", "stance": "Education requires emotional and human connection."},
+  {"name": "Ethical Skeptic", "stance": "AI-led education creates moral concerns."}
+]
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 3. 人格AIの動的生成
+- 視点情報からsystem promptを生成し、個別のGPTエージェントとして発言させる
+- system prompt例:
+```text
+You are a professor known as the "Techno-Optimist". You believe AI will democratize and enhance global education. Respond to user topics from this stance.
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 4. 自動論語開始
+- 人格AIたちがユーザーのテーマに対して、3~5ターンの論語を自動生成
+- 後に実装するAutoGenへの移行も可能
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 5. ユーザーの発言に対する再論語
+- ユーザーが言語を入力すると、現在の人格AIたちが再度論語を繰り復する
 
-## Learn More
+### 6. (優先序中) 要約と知見サマリー
+- 論語結結にMetaAIが要点を整理し、ユーザーの視点や思考型を簡易に描納
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 実装技術
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### フロントエンド
+- Next.js (App Router)
+- Tailwind CSS
 
-## Deploy on Vercel
+### バックエンド
+- Go or Node.js (GPTプロンプト生成、AIロジック実行)
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### AI
+- OpenAI GPT-4
+  - Meta AI: 視点分析用
+  - Dynamic Persona AI: 論語用の複数GPT instance
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### DB
+- Supabase
+  - Session、User、Persona、Threadのログ保存
+
+### Auth
+- Supabase Auth
+
+### Hosting
+- Frontend: Vercel
+- Backend: Fly.io or Render
+
+---
+
+## 今後の拡張性のために
+- 思考履歴をNotion/マークダウン形式で出力
+- 人格を自分でカスタマイズ可能
+- 思考型を分析してユーザーに推奨視点を提示
+
+---
+
+## サービスの要素をAIに指示する際の文面例
+
+「ユーザーが投げた意見・問題に対して、その内容を解析し、異なる視点や信念を持つ3~5人の人格AIを動的に生成してください。各人格は「名前」と「思想スタンス」の構造で表現し、それぞれにGPTのSystem Promptを創出します。生成したAI達によるユーザーテーマに対する論語を開始してください。」
